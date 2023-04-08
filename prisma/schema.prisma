@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+
+  roles       UsersRoles[]
+  permissions UsersPermissions[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("user")
+}
+
+model UsersRoles {
+  User    User @relation(fields: [user_id], references: [id])
+  user_id Int
+  Role    Role @relation(fields: [role_id], references: [id])
+  role_id Int
+
+  @@id([user_id, role_id])
+  @@map("users_roles")
+}
+
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  users       UsersRoles[]
+  permissions PermissionsRoles[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("role")
+}
+
+model PermissionsRoles {
+  Role          Role       @relation(fields: [role_id], references: [id])
+  role_id       Int
+  Permission    Permission @relation(fields: [permission_id], references: [id])
+  permission_id Int
+
+  @@id([role_id, permission_id])
+  @@map("permissions_roles")
+}
+
+model Product {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("product")
+}
+
+model UsersPermissions {
+  User          User       @relation(fields: [user_id], references: [id])
+  user_id       Int
+  Permission    Permission @relation(fields: [permission_id], references: [id])
+  permission_id Int
+
+  @@id([user_id, permission_id])
+  @@map("users_permissions")
+}
+
+model Permission {
+  id          Int                @id @default(autoincrement())
+  name        String
+  description String
+  users       UsersPermissions[]
+  roles       PermissionsRoles[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("permission")
+}
